@@ -14,7 +14,7 @@
     describe('with defaults -- global deny all', function() {
       for (var i in roles) (function(role) {
         for (var j in resources) (function(resource) {
-          it('should deny roll "' + role + '" to resource "' + resource + '"', function() {
+          it('should deny role "' + role + '" to resource "' + resource + '"', function() {
             assert(this.acl.isAllowed(role, resource) == false);
             assert(this.acl.isDenied(role, resource) == true);
           });
@@ -115,11 +115,11 @@
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
             if (role == 'guest') {
-              it('should deny all resources to globally denined roll', function() {
+              it('should deny all resources to globally denined role', function() {
                 assert(this.acl.isAllowed(role, resource) == false);
               });
             } else {
-              it('should allow resources to all other rolls', function() {
+              it('should allow resources to all other roles', function() {
                 assert(this.acl.isAllowed(role, resource) == true);
               });
             }

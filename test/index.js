@@ -1,4 +1,4 @@
-// index.js - Test main simple-acl export
+// index.js - Test main virgen-acl export
 (function() {
   var assert = require('assert');
 

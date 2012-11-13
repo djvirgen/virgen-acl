@@ -1,7 +1,7 @@
 // index.js - Test main virgen-acl export
 (function() {
   var assert = require('assert')
-    , Acl = require('..').Acl
+    , Acl = require('../lib').Acl
     , roles = ['admin', 'member', 'guest']
     , resources = ['blog', 'page', 'site'];
 

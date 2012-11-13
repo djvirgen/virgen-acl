@@ -1,6 +1,6 @@
 {
   "name": "virgen-acl",
-  "version": "0.0.55555",
+  "version": "0.0.6",
   "description": "A simple ACL for node.js",
   "main": "lib/index.js",
   "scripts": {

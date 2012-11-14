@@ -12,23 +12,22 @@ Usage
       , acl = new Acl();
 
     // Set up roles
-    acl.addRole('guest'); // guest user
-    acl.addRole('member', 'guest'); // member inherits permissions from guest
-    acl.addRole('admin'); // Admin inherits from no one
+    acl.addRole('guest');                     // guest user
+    acl.addRole('member', 'guest');           // member inherits permissions from guest
+    acl.addRole('admin');                     // Admin inherits from no one
 
     // Set up resources
-    acl.addResource('blog:view');             // view a blog
-    acl.addResource('blog:create');           // create a blog
-    acl.addResource('blog:comment');          // comment on a blog
+    acl.addResource('blog');                  // blog resource
+    acl.addResource('page');                  // blog resource
 
     // Set up access rules (LIFO)
     acl.deny();                               // deny all by default
     acl.allow('admin');                       // allow admin access to everything
-    acl.allow('member', 'blog:comment');      // allow members to post comments
-    acl.allow(null, 'blog:view');             // allow everyone to view the blog
+    acl.allow('member', 'blog', 'comment');   // allow members to comment on blogs
+    acl.allow(null, 'blog', 'view');          // allow everyone to view the blogs
 
     // Query the ACL
-    acl.isAllowed('member', 'blog:comment', function(err, allowed) {
+    acl.isAllowed('member', 'blog', 'comment', function(err, allowed) {
       if (allowed) {
         // commenting allowed!
       } else {
@@ -43,7 +42,7 @@ Sometimes you need more complex rules when determining access. Custom
 assertions can be provided to perform additional logic on each matching
 ACL query:
 
-    acl.allow('member', 'blog', 'edit', function(role, resource, next, result) {
+    acl.allow('member', 'blog', 'edit', function(role, resource, action, next, result) {
       // Use next() if unable to determine permission based on provided arguments
       if (!role instanceof User || !resource instanceof Blog) return next();
 

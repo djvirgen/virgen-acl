@@ -5,7 +5,8 @@ require('should');
   var assert = require('assert')
     , Acl = require('../lib').Acl
     , roles = ['admin', 'member', 'guest']
-    , resources = ['blog', 'page', 'site'];
+    , resources = ['blog', 'page', 'site']
+    , actions = ['view', 'create', 'edit', 'delete'];
 
   // tests
   describe('acl', function() {
@@ -20,20 +21,22 @@ require('should');
 
       for (var i in roles) (function(role) {
         for (var j in resources) (function(resource) {
-          it('should deny role "' + role + '" to resource "' + resource + '"', function(done) {
-            this.acl.isAllowed(role, resource, function(err, allowed) {
-               allowed.should.equal(false);
-               done();
+          for (var k in actions) (function(action) {
+            it('should deny role "' + role + '" to resource "' + resource + '" for action "' + action + '"', function(done) {
+              this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                 allowed.should.equal(false);
+                 done();
+              });
             });
-          });
+          })(actions[k]);
         })(resources[j]);
       })(roles[i]);
 
       it("should honor LIFO stack", function(done) {
-        this.acl.allow('foo', 'bar');
-        this.acl.deny('foo', 'bar');
+        this.acl.allow('foo', 'bar', 'derp');
+        this.acl.deny('foo', 'bar', 'derp');
 
-        this.acl.isAllowed('foo', 'bar', function(err, allowed) {
+        this.acl.isAllowed('foo', 'bar', 'derp', function(err, allowed) {
           allowed.should.equal(false);
           done();
         });
@@ -45,11 +48,14 @@ require('should');
         })
 
         it("should run when checking permissions", function(done) {
-          this.acl.allow('foo', 'bar', function(err, role, resource, next, result) {
+          this.acl.allow('foo', 'bar', 'derp', function(err, role, resource, action, next, result) {
+            role.should.equal('foo');
+            resource.should.equal('bar');
+            action.should.equal('derp');
             result(null, false);
           });
 
-          this.acl.isAllowed('foo', 'bar', function(err, allowed){
+          this.acl.isAllowed('foo', 'bar', 'derp', function(err, allowed){
             allowed.should.equal(false);
             done();
           });
@@ -59,26 +65,28 @@ require('should');
       describe('custom permissions', function() {
         beforeEach(function() {
           this.acl = new Acl();
-          this.acl.allow('user', 'page');
+          this.acl.allow('user', 'page', 'view');
         });
 
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
-            if (role == 'user' && resource == 'page') {
-              it('should allow role to resource', function(done) {
-                this.acl.isAllowed(role, resource, function(err, allowed) {
-                  assert(allowed == true);
-                  done();
+            for (var k in actions) (function(action) {
+              if (role == 'user' && resource == 'page' && action == 'view') {
+                it('should allow role to resource', function(done) {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                    assert(allowed == true);
+                    done();
+                  });
                 });
-              });
-            } else {
-              it('should deny role to resource', function(done) {
-                this.acl.isAllowed(role, resource, function(err, allowed) {
-                  assert(allowed == false);
-                  done();
+              } else {
+                it('should deny role to resource', function(done) {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                    assert(allowed == false);
+                    done();
+                  });
                 });
-              });
-            }
+              }
+            })(actions[k]);
           })(resources[j]);
         })(roles[i]);
       });
@@ -91,19 +99,21 @@ require('should');
 
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
-            if (role == 'admin') {
-              it('should allow all resources to globally allowed role', function() {
-                this.acl.isAllowed(role, resource, function(err, allowed){
-                  assert(allowed == true);
+            for (var k in actions) (function(action) {
+              if (role == 'admin') {
+                it('should allow all resources to globally allowed role', function() {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed){
+                    assert(allowed == true);
+                  });
                 });
-              });
-            } else {
-              it('should deny all resources to all other roles', function() {
-                this.acl.isAllowed(role, resource, function(err, allowed){
-                  assert(allowed == false);
-                })
-              });
-            }
+              } else {
+                it('should deny all resources to all other roles', function() {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed){
+                    assert(allowed == false);
+                  })
+                });
+              }
+            })(actions[k]);
           })(resources[j]);
         })(roles[i]);
       });
@@ -116,21 +126,23 @@ require('should');
 
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
-            if (resource == 'blog') {
-              it('should allow all roles to globally allowed resource', function(done) {
-                this.acl.isAllowed(role, resource, function(err, allowed){
-                  allowed.should.equal(true);
-                  done();
+            for (var k in actions) (function(action) {
+              if (resource == 'blog') {
+                it('should allow all roles to globally allowed resource', function(done) {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed){
+                    allowed.should.equal(true);
+                    done();
+                  });
                 });
-              });
-            } else {
-              it('should deny all roles to all other resources', function(done) {
-                this.acl.isAllowed(role, resource, function(err, allowed) {
-                  allowed.should.equal(false);
-                  done();
+              } else {
+                it('should deny all roles to all other resources', function(done) {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                    allowed.should.equal(false);
+                    done();
+                  });
                 });
-              });
-            }
+              }
+            })(actions[k]);
           })(resources[j]);
         })(roles[i]);
       });
@@ -144,11 +156,12 @@ require('should');
           var parent = 'parent';
           var child = 'child';
           var resource = 'resource';
+          var action = 'action';
           this.acl.addRole(parent);
           this.acl.addRole(child, parent);
-          this.acl.allow(parent, resource);
+          this.acl.allow(parent, resource, action);
 
-          this.acl.isAllowed(child, resource, function(err, allowed) {
+          this.acl.isAllowed(child, resource, action, function(err, allowed) {
             allowed.should.equal(true); // child can access resource
             done();
           });
@@ -164,11 +177,12 @@ require('should');
           var role = 'role';
           var parent = 'parent';
           var child = 'child';
+          var action = 'action';
           this.acl.addResource(parent);
           this.acl.addResource(child, parent);
-          this.acl.allow(role, parent);
+          this.acl.allow(role, parent, action);
 
-          this.acl.isAllowed(role, child, function(err, allowed) {
+          this.acl.isAllowed(role, child, action, function(err, allowed) {
             allowed.should.equal(true); // role can also access child resource
           });
         });
@@ -183,11 +197,13 @@ require('should');
 
       for (var i in roles) (function(role) {
         for (var j in resources) (function(resource) {
-          it('should allow allow all roles to all resources', function() {
-            this.acl.isAllowed(role, resource, function(err, allowed) {
-              allowed.should.equal(true);
+          for (var k in actions) (function(action) {
+            it('should allow allow all roles to all resources', function() {
+              this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                allowed.should.equal(true);
+              });
             });
-          });
+          })(actions[k]);
         })(resources[j]);
       })(roles[i]);
 
@@ -200,19 +216,21 @@ require('should');
 
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
-            if (role == 'guest') {
-              it('should deny all resources to globally denined role', function() {
-                this.acl.isAllowed(role, resource, function(err, allowed) {
-                  allowed.should.equal(false);
+            for (var k in actions) (function(action) {
+              if (role == 'guest') {
+                it('should deny all resources to globally denined role', function() {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                    allowed.should.equal(false);
+                  });
                 });
-              });
-            } else {
-              it('should allow resources to all other roles', function() {
-                this.acl.isAllowed(role, resource, function(err, allowed) {
-                  allowed.should.equal(true);
+              } else {
+                it('should allow resources to all other roles', function() {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                    allowed.should.equal(true);
+                  });
                 });
-              });
-            }
+              }
+            })(actions[k]);
           })(resources[j]);
         })(roles[i]);
       });
@@ -226,19 +244,21 @@ require('should');
 
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
-            if (resource == 'blog') {
-              it('should deny all roles to globally denined resource', function() {
-                this.acl.isAllowed(role, resource, function(err, allowed) {
-                  allowed.should.equal(false);
+            for (var k in actions) (function(action) {
+              if (resource == 'blog') {
+                it('should deny all roles to globally denined resource', function() {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                    allowed.should.equal(false);
+                  });
                 });
-              });
-            } else {
-              it('should allow roles to all other resources', function() {
-                this.acl.isAllowed(role, resource, function(err, allowed) {
-                  allowed.should.equal(true);
+              } else {
+                it('should allow roles to all other resources', function() {
+                  this.acl.isAllowed(role, resource, action, function(err, allowed) {
+                    allowed.should.equal(true);
+                  });
                 });
-              });
-            }
+              }
+            })(actions[k]);
           })(resources[j]);
         })(roles[i]);
       });

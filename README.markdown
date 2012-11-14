@@ -25,6 +25,7 @@ Usage
     acl.allow('admin');                       // allow admin access to everything
     acl.allow('member', 'blog', 'comment');   // allow members to comment on blogs
     acl.allow(null, 'blog', 'view');          // allow everyone to view the blogs
+    acl.allow('guest', 'blog', ['list', 'search']) // supports arrays of actions
 
     // Query the ACL
     acl.isAllowed('member', 'blog', 'comment', function(err, allowed) {

@@ -42,6 +42,35 @@ require('should');
         });
       });
 
+      describe("actions", function() {
+        var allowedActions = ['view', 'comment', 'list'];
+        var deniedActions = ['delete', 'edit', 'publish'];
+
+        beforeEach(function(){
+          this.acl = new Acl();
+          this.acl.allow('foo', 'bar', allowedActions);
+          this.acl.deny('foo', 'bar', deniedActions);
+        });
+
+        for (var i in allowedActions) (function(action) {
+          it("should allow all actions specified in array", function(done) {
+            this.acl.isAllowed('foo', 'bar', action, function(err, allowed) {
+              allowed.should.equal(true);
+              done();
+            });
+          });
+        })(allowedActions[i]);
+
+        for (var i in deniedActions) (function(action) {
+          it("should deny all actions specified in array", function(done) {
+            this.acl.isAllowed('foo', 'bar', action, function(err, allowed) {
+              allowed.should.equal(false);
+              done();
+            });
+          });
+        })(deniedActions[i]);
+      });
+
       describe("custom assertions", function() {
         beforeEach(function() {
           this.acl = new Acl();

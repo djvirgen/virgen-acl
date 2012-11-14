@@ -4,6 +4,11 @@ Virgen ACL
 Simple in-memory ACL for node.js apps. Supports arbitrary roles and resources
 while honoring a LIFO stack.
 
+Installation
+------------
+
+    npm install virgen-acl
+
 Usage
 -----
 

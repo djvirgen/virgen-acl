@@ -28,12 +28,30 @@ Usage
     acl.allow(null, 'blog:view');             // allow everyone to view the blog
 
     // Query the ACL
-    acl.isAllowed('admin', 'blog:create');    // returns true
-    acl.isAllowed('member', 'blog:create');   // returns false
-    acl.isAllowed('guest', 'blog:create');    // returns false
-    acl.isAllowed('admin', 'blog:comment');   // returns true
-    acl.isAllowed('member', 'blog:comment');  // returns true
-    acl.isAllowed('guest', 'blog:comment');   // returns false
-    acl.isAllowed('admin', 'blog:view');      // returns true
-    acl.isAllowed('member', 'blog:view');     // returns true
-    acl.isAllowed('guest', 'blog:view');      // returns true
+    acl.isAllowed('member', 'blog:comment', function(err, allowed) {
+      if (allowed) {
+        // commenting allowed!
+      } else {
+        // no commenting allowed!
+      }
+    });
+
+Custom Assertions
+-----------------
+
+Sometimes you need more complex rules when determining access. Custom
+assertions can be provided to perform additional logic on each matching
+ACL query:
+
+    acl.allow('member', 'blog', 'edit', function(role, resource, next, result) {
+      // Use next() if unable to determine permission based on provided arguments
+      if (!role instanceof User || !resource instanceof Blog) return next();
+
+      if (role.id == resource.user_id) {
+        // resource belongs to this role, allow editing
+        result(true);
+      } else {
+        // resource does not belong to this role, do not allow editing
+        result(false);
+      }
+    });

@@ -1,3 +1,5 @@
+require('should');
+
 // index.js - Test main virgen-acl export
 (function() {
   var assert = require('assert')
@@ -18,17 +20,40 @@
 
       for (var i in roles) (function(role) {
         for (var j in resources) (function(resource) {
-          it('should deny role "' + role + '" to resource "' + resource + '"', function() {
-            assert(this.acl.isAllowed(role, resource) == false);
-            assert(this.acl.isDenied(role, resource) == true);
+          it('should deny role "' + role + '" to resource "' + resource + '"', function(done) {
+            this.acl.isAllowed(role, resource, function(err, allowed) {
+               allowed.should.equal(false);
+               done();
+            });
           });
-        })(resources[i]);
+        })(resources[j]);
       })(roles[i]);
 
-      it("should honor LIFO stack", function() {
+      it("should honor LIFO stack", function(done) {
         this.acl.allow('foo', 'bar');
         this.acl.deny('foo', 'bar');
-        assert(this.acl.isAllowed('foo', 'bar') == false);
+
+        this.acl.isAllowed('foo', 'bar', function(err, allowed) {
+          allowed.should.equal(false);
+          done();
+        });
+      });
+
+      describe("custom assertions", function() {
+        beforeEach(function() {
+          this.acl = new Acl();
+        })
+
+        it("should run when checking permissions", function(done) {
+          this.acl.allow('foo', 'bar', function(err, role, resource, next, result) {
+            result(null, false);
+          });
+
+          this.acl.isAllowed('foo', 'bar', function(err, allowed){
+            allowed.should.equal(false);
+            done();
+          });
+        });
       });
 
       describe('custom permissions', function() {
@@ -40,15 +65,21 @@
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
             if (role == 'user' && resource == 'page') {
-              it('should allow role to resource', function() {
-                assert(this.acl.isAllowed(role, resource) == true);
+              it('should allow role to resource', function(done) {
+                this.acl.isAllowed(role, resource, function(err, allowed) {
+                  assert(allowed == true);
+                  done();
+                });
               });
             } else {
-              it('should deny role to resource', function() {
-                assert(this.acl.isAllowed(role, resource) == false);
+              it('should deny role to resource', function(done) {
+                this.acl.isAllowed(role, resource, function(err, allowed) {
+                  assert(allowed == false);
+                  done();
+                });
               });
             }
-          })(resources[i]);
+          })(resources[j]);
         })(roles[i]);
       });
 
@@ -62,14 +93,18 @@
           for (var j in resources) (function(resource) {
             if (role == 'admin') {
               it('should allow all resources to globally allowed role', function() {
-                assert(this.acl.isAllowed(role, resource) == true);
+                this.acl.isAllowed(role, resource, function(err, allowed){
+                  assert(allowed == true);
+                });
               });
             } else {
               it('should deny all resources to all other roles', function() {
-                assert(this.acl.isAllowed(role, resource) == false);
+                this.acl.isAllowed(role, resource, function(err, allowed){
+                  assert(allowed == false);
+                })
               });
             }
-          })(resources[i]);
+          })(resources[j]);
         })(roles[i]);
       });
 
@@ -82,12 +117,18 @@
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
             if (resource == 'blog') {
-              it('should allow all roles to globally allowed resource', function() {
-                assert(this.acl.isAllowed(role, resource) == true);
+              it('should allow all roles to globally allowed resource', function(done) {
+                this.acl.isAllowed(role, resource, function(err, allowed){
+                  allowed.should.equal(true);
+                  done();
+                });
               });
             } else {
-              it('should deny all roles to all other resources', function() {
-                assert(this.acl.isAllowed(role, resource) == false);
+              it('should deny all roles to all other resources', function(done) {
+                this.acl.isAllowed(role, resource, function(err, allowed) {
+                  allowed.should.equal(false);
+                  done();
+                });
               });
             }
           })(resources[j]);
@@ -99,20 +140,18 @@
           this.acl = new Acl();
         });
 
-        it('supports role inheritance', function() {
+        it('supports role inheritance', function(done) {
           var parent = 'parent';
           var child = 'child';
+          var resource = 'resource';
           this.acl.addRole(parent);
           this.acl.addRole(child, parent);
+          this.acl.allow(parent, resource);
 
-          // Initially, neither parent nor child can access resource
-          assert(this.acl.isAllowed(parent, 'foo') == false);
-          assert(this.acl.isAllowed(child, 'foo') == false);
-
-          // Allow the parent, and the child can also access resource
-          this.acl.allow(parent, 'foo');
-          assert(this.acl.isAllowed(parent, 'foo') == true); // parent can now access resource
-          assert(this.acl.isAllowed(child, 'foo') == true); // child can also access resource
+          this.acl.isAllowed(child, resource, function(err, allowed) {
+            allowed.should.equal(true); // child can access resource
+            done();
+          });
         });
       });
 
@@ -122,19 +161,16 @@
         });
 
         it('supports resource inheritance', function() {
+          var role = 'role';
           var parent = 'parent';
           var child = 'child';
           this.acl.addResource(parent);
           this.acl.addResource(child, parent);
+          this.acl.allow(role, parent);
 
-          // Initially, neither parent nor child can access resource
-          assert(this.acl.isAllowed('foo', parent) == false);
-          assert(this.acl.isAllowed('foo', child) == false);
-
-          // Allow the parent, and the child can also access resource
-          this.acl.allow('foo', parent);
-          assert(this.acl.isAllowed('foo', parent) == true); // role can now access resource
-          assert(this.acl.isAllowed('foo', child) == true); // role can also access child resource
+          this.acl.isAllowed(role, child, function(err, allowed) {
+            allowed.should.equal(true); // role can also access child resource
+          });
         });
       });
     });
@@ -148,7 +184,9 @@
       for (var i in roles) (function(role) {
         for (var j in resources) (function(resource) {
           it('should allow allow all roles to all resources', function() {
-            assert(this.acl.isAllowed(role, resource) == true);
+            this.acl.isAllowed(role, resource, function(err, allowed) {
+              allowed.should.equal(true);
+            });
           });
         })(resources[j]);
       })(roles[i]);
@@ -164,11 +202,15 @@
           for (var j in resources) (function(resource) {
             if (role == 'guest') {
               it('should deny all resources to globally denined role', function() {
-                assert(this.acl.isAllowed(role, resource) == false);
+                this.acl.isAllowed(role, resource, function(err, allowed) {
+                  allowed.should.equal(false);
+                });
               });
             } else {
               it('should allow resources to all other roles', function() {
-                assert(this.acl.isAllowed(role, resource) == true);
+                this.acl.isAllowed(role, resource, function(err, allowed) {
+                  allowed.should.equal(true);
+                });
               });
             }
           })(resources[j]);
@@ -186,14 +228,18 @@
           for (var j in resources) (function(resource) {
             if (resource == 'blog') {
               it('should deny all roles to globally denined resource', function() {
-                assert(this.acl.isAllowed(role, resource) == false);
+                this.acl.isAllowed(role, resource, function(err, allowed) {
+                  allowed.should.equal(false);
+                });
               });
             } else {
               it('should allow roles to all other resources', function() {
-                assert(this.acl.isAllowed(role, resource) == true);
+                this.acl.isAllowed(role, resource, function(err, allowed) {
+                  allowed.should.equal(true);
+                });
               });
             }
-          })(resources[i]);
+          })(resources[j]);
         })(roles[i]);
       });
     });

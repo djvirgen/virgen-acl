@@ -33,7 +33,7 @@ Usage
     acl.allow("guest", "blog", ["list", "search"]) // supports arrays of actions
 
     // Query the ACL
-    acl.isAllowed("member", "blog", "comment", function(err, allowed) {
+    acl.query("member", "blog", "comment", function(err, allowed) {
       if (allowed) {
         // commenting allowed!
       } else {
@@ -93,22 +93,22 @@ Here's an example of how that might work:
     acl.allow("guest", "blog", "view");     // guests allowed to view blog
     acl.allow("member", "blog", "comment"); // member allowed to comment on blog
 
-    acl.isAllowed(userA, blog, "view", function(err, allowed) {
+    acl.query(userA, blog, "view", function(err, allowed) {
       // userA is a guest and can view blogs
       assert(allowed == true);
     });
 
-    acl.isAllowed(userA, blog, "comment", function(err, allowed) {
+    acl.query(userA, blog, "comment", function(err, allowed) {
       // userA is a guest and cannot comment on blogs
       assert(allowed == false);
     });
 
-    acl.isAllowed(userB, blog, "view", function(err, allowed) {
+    acl.query(userB, blog, "view", function(err, allowed) {
       // userB is a member and inherits view permission from guest
       assert(allowed == true);
     });
 
-    acl.isAllowed(userB, blog, "comment", function(err, allowed) {
+    acl.query(userB, blog, "comment", function(err, allowed) {
       // userB is a member and has permission to comment on blogs
       assert(allowed == false);
     });

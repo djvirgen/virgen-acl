@@ -32,6 +32,22 @@ require('should');
         })(resources[j]);
       })(roles[i]);
 
+      it("should handle null role", function(done) {
+        this.acl.allow(null, 'foo', 'bar');
+        this.acl.query(null, 'foo', 'bar', function(err, allowed) {
+          allowed.should.equal(true);
+          done();
+        });
+      });
+
+      it("should handle null resource", function(done) {
+        this.acl.allow('foo', null, 'bar');
+        this.acl.query('foo', null, 'bar', function(err, allowed) {
+          allowed.should.equal(true);
+          done();
+        });
+      });
+
       it("should honor LIFO stack", function(done) {
         this.acl.allow('foo', 'bar', 'derp');
         this.acl.deny('foo', 'bar', 'derp');

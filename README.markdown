@@ -135,8 +135,11 @@ ACL query:
     });
 
     var userA = new User({id: 123});
+    assert(userA.id == 123);
     var userB = new User({id: 456});
+    assert(userB.id == 456);
     var blog = new Blog({user_id: 123});
+    assert(blog.user_id == 123);
 
     // userA can edit this blog because the blog's user ID matches the userA's ID
     acl.query(userA, blog, 'edit', function(err, allowed) {

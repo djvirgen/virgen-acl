@@ -1,8 +1,22 @@
-Virgen ACL
+Virgen-ACL
 ==========
 
-Simple in-memory ACL for node.js apps. Supports arbitrary roles and resources
-while honoring a LIFO stack.
+Simple in-memory ACL for node.js apps. Supports arbitrary roles and resources,
+including role/resource detection using a simple interface. Additionally
+supports custom assertions for more complex rules.
+
+Why Virgen-ACL?
+---------------
+
+Most ACLs for node.js were too complex for my taste, or required strict
+conventions that I didn't necessarily want/need to follow. Virgen-ACL is an
+attempt to provide a low-level ACL that can be used the way works best for you.
+It is based loosely on Zend_Acl from Zend Framework 1.x, which is one of the
+most flexible ACLs I've ever worked with.
+
+All ACL rules are stored in memory, making Virgen-ACL extremely fast. Unless
+specified with custom assertions, there are no DB lookups when querying the ACL,
+allowing your app to respond as quickly as possible to ACL-gated content.
 
 Installation
 ------------
@@ -17,13 +31,12 @@ Usage
       , acl = new Acl();
 
     // Set up roles
-    acl.addRole("guest");                     // guest user
+    acl.addRole("guest");                     // guest user, inherits from no one
     acl.addRole("member", "guest");           // member inherits permissions from guest
     acl.addRole("admin");                     // Admin inherits from no one
 
     // Set up resources
-    acl.addResource("blog");                  // blog resource
-    acl.addResource("page");                  // blog resource
+    acl.addResource("blog");                  // blog resource, inherits no resources
 
     // Set up access rules (LIFO)
     acl.deny();                               // deny all by default
@@ -45,7 +58,7 @@ Role and Resource Discovery
 ---------------------------
 
 If you are more of an object-oriented programmer and prefer to use objects
-to represent your roles and resource, then you're in luck! Virgen-ACL can
+to represent your roles and resources, then you're in luck! Virgen-ACL can
 discover roles and resources from your objects so long as your role objects
 contain the property `role_id` OR a function `getRoleId()` and your resource
 objects contain the property `resource_id` OR a function `getResourceId()`.

@@ -14,7 +14,93 @@ require('should');
       this.acl = new Acl();
     });
 
-    describe('with defaults -- global deny all', function() {
+    describe('role', function() {
+      beforeEach(function() {
+        this.acl = new Acl();
+      });
+
+      it("should support null", function(done) {
+        this.acl.allow(null, 'foo', 'bar');
+        this.acl.query(null, 'foo', 'bar', function(err, allowed) {
+          allowed.should.equal(true);
+          done();
+        });
+      });
+
+      it('should support role inheritance', function(done) {
+        var parent = 'parent';
+        var child = 'child';
+        var resource = 'resource';
+        var action = 'action';
+        this.acl.addRole(parent);
+        this.acl.addRole(child, parent);
+        this.acl.allow(parent, resource, action);
+
+        this.acl.query(child, resource, action, function(err, allowed) {
+          allowed.should.equal(true); // child can access resource
+          done();
+        });
+      });
+    });
+
+    describe('resource', function() {
+      beforeEach(function(){
+        this.acl = new Acl();
+      });
+
+      it("should handle null resource", function(done) {
+        this.acl.allow('foo', null, 'bar');
+        this.acl.query('foo', null, 'bar', function(err, allowed) {
+          allowed.should.equal(true);
+          done();
+        });
+      });
+
+      it('should supports resource inheritance', function() {
+        var role = 'role';
+        var parent = 'parent';
+        var child = 'child';
+        var action = 'action';
+        this.acl.addResource(parent);
+        this.acl.addResource(child, parent);
+        this.acl.allow(role, parent, action);
+
+        this.acl.query(role, child, action, function(err, allowed) {
+          allowed.should.equal(true); // role can also access child resource
+        });
+      });
+    });
+
+    describe("action", function() {
+      var allowedActions = ['view', 'comment', 'list'];
+      var deniedActions = ['delete', 'edit', 'publish'];
+
+      beforeEach(function(){
+        this.acl = new Acl();
+        this.acl.allow('foo', 'bar', allowedActions);
+        this.acl.deny('foo', 'bar', deniedActions);
+      });
+
+      for (var i in allowedActions) (function(action) {
+        it("should allow all actions specified in array", function(done) {
+          this.acl.query('foo', 'bar', action, function(err, allowed) {
+            allowed.should.equal(true);
+            done();
+          });
+        });
+      })(allowedActions[i]);
+
+      for (var i in deniedActions) (function(action) {
+        it("should deny all actions specified in array", function(done) {
+          this.acl.query('foo', 'bar', action, function(err, allowed) {
+            allowed.should.equal(false);
+            done();
+          });
+        });
+      })(deniedActions[i]);
+    });
+
+    describe('query', function() {
       beforeEach(function() {
         this.acl = new Acl();
       });
@@ -32,22 +118,6 @@ require('should');
         })(resources[j]);
       })(roles[i]);
 
-      it("should handle null role", function(done) {
-        this.acl.allow(null, 'foo', 'bar');
-        this.acl.query(null, 'foo', 'bar', function(err, allowed) {
-          allowed.should.equal(true);
-          done();
-        });
-      });
-
-      it("should handle null resource", function(done) {
-        this.acl.allow('foo', null, 'bar');
-        this.acl.query('foo', null, 'bar', function(err, allowed) {
-          allowed.should.equal(true);
-          done();
-        });
-      });
-
       it("should honor LIFO stack", function(done) {
         this.acl.allow('foo', 'bar', 'derp');
         this.acl.deny('foo', 'bar', 'derp');
@@ -56,35 +126,6 @@ require('should');
           allowed.should.equal(false);
           done();
         });
-      });
-
-      describe("actions", function() {
-        var allowedActions = ['view', 'comment', 'list'];
-        var deniedActions = ['delete', 'edit', 'publish'];
-
-        beforeEach(function(){
-          this.acl = new Acl();
-          this.acl.allow('foo', 'bar', allowedActions);
-          this.acl.deny('foo', 'bar', deniedActions);
-        });
-
-        for (var i in allowedActions) (function(action) {
-          it("should allow all actions specified in array", function(done) {
-            this.acl.query('foo', 'bar', action, function(err, allowed) {
-              allowed.should.equal(true);
-              done();
-            });
-          });
-        })(allowedActions[i]);
-
-        for (var i in deniedActions) (function(action) {
-          it("should deny all actions specified in array", function(done) {
-            this.acl.query('foo', 'bar', action, function(err, allowed) {
-              allowed.should.equal(false);
-              done();
-            });
-          });
-        })(deniedActions[i]);
       });
 
       describe("custom assertions", function() {
@@ -190,47 +231,6 @@ require('should');
             })(actions[k]);
           })(resources[j]);
         })(roles[i]);
-      });
-
-      describe('role', function() {
-        beforeEach(function(){
-          this.acl = new Acl();
-        });
-
-        it('supports role inheritance', function(done) {
-          var parent = 'parent';
-          var child = 'child';
-          var resource = 'resource';
-          var action = 'action';
-          this.acl.addRole(parent);
-          this.acl.addRole(child, parent);
-          this.acl.allow(parent, resource, action);
-
-          this.acl.query(child, resource, action, function(err, allowed) {
-            allowed.should.equal(true); // child can access resource
-            done();
-          });
-        });
-      });
-
-      describe('resource', function() {
-        beforeEach(function(){
-          this.acl = new Acl();
-        });
-
-        it('supports resource inheritance', function() {
-          var role = 'role';
-          var parent = 'parent';
-          var child = 'child';
-          var action = 'action';
-          this.acl.addResource(parent);
-          this.acl.addResource(child, parent);
-          this.acl.allow(role, parent, action);
-
-          this.acl.query(role, child, action, function(err, allowed) {
-            allowed.should.equal(true); // role can also access child resource
-          });
-        });
       });
     });
 

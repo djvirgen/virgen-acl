@@ -120,16 +120,30 @@ Sometimes you need more complex rules when determining access. Custom
 assertions can be provided to perform additional logic on each matching
 ACL query:
 
-    acl.allow("member", "blog", "edit", function(role, resource, action, next, result) {
+    acl.allow("member", "blog", "edit", function(role, resource, action, result, next) {
       // Use next() if unable to determine permission based on provided arguments
       if (!(role instanceof User) || !(resource instanceof Blog))
         return next();
 
       if (role.id == resource.user_id) {
         // resource belongs to this role, allow editing
-        result(true);
+        result(null, true);
       } else {
         // resource does not belong to this role, do not allow editing
-        result(false);
+        result(null, false);
       }
+    });
+
+    var userA = new User({id: 123});
+    var userB = new User({id: 456});
+    var blog = new Blog({user_id: 123});
+
+    // userA can edit this blog because the blog's user ID matches the userA's ID
+    acl.query(userA, blog, 'edit', function(err, allowed) {
+      assert(allowed == true);
+    });
+
+    // However userB cannot edit this blog
+    acl.query(userB, blog, 'edit', function(err, allowed) {
+      assert(allowed == false);
     });

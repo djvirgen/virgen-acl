@@ -134,14 +134,14 @@ require('should');
         })
 
         it("should run when checking permissions", function(done) {
-          this.acl.allow('foo', 'bar', 'derp', function(err, role, resource, action, next, result) {
+          this.acl.allow('foo', 'bar', 'derp', function(err, role, resource, action, result, next) {
             role.should.equal('foo');
             resource.should.equal('bar');
             action.should.equal('derp');
             result(null, false);
           });
 
-          this.acl.query('foo', 'bar', 'derp', function(err, allowed){
+          this.acl.query('foo', 'bar', 'derp', function(err, allowed) {
             allowed.should.equal(false);
             done();
           });

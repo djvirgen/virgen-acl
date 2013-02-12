@@ -79,6 +79,7 @@ require('should');
         this.acl = new Acl();
         this.acl.allow('foo', 'bar', allowedActions);
         this.acl.deny('foo', 'bar', deniedActions);
+        this.acl.allow('derp', 'doo');
       });
 
       for (var i in allowedActions) (function(action) {
@@ -98,6 +99,13 @@ require('should');
           });
         });
       })(deniedActions[i]);
+
+      it("supports wildcard actions", function(done) {
+        this.acl.query('derp', 'doo', 'anything', function(err, allowed) {
+          allowed.should.equal(true);
+          done();
+        });
+      });
     });
 
     describe('query', function() {

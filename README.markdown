@@ -27,7 +27,7 @@ Usage
 -----
 
     // Load library
-    var Acl = require('virgen-acl").Acl
+    var Acl = require("virgen-acl").Acl
       , acl = new Acl();
 
     // Set up roles

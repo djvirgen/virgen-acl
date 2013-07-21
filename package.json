@@ -11,7 +11,7 @@
     "test": "mocha"
   },
   "devDependencies": {
-    "mocha": "~1.6.0",
+    "mocha": ">= 1.6.0",
     "should": ">= 0.0.1"
   },
   "keywords": [

@@ -11,8 +11,8 @@
     "test": "mocha"
   },
   "devDependencies": {
-    "mocha": ">= 1.6.0",
-    "should": ">= 0.0.1"
+    "mocha": "~1.12.0",
+    "should": "~1.2.2"
   },
   "keywords": [
     "acl"

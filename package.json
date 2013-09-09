@@ -1,6 +1,6 @@
 {
   "name": "virgen-acl",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "A fast in-memory ACL with role/resource inheritance and support for custom assertions.",
   "main": "lib/index.js",
   "repository": {

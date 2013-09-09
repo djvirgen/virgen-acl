@@ -55,6 +55,83 @@ require('should');
           done();
         });
       });
+
+      it('should deny if custom assertions cannot resolve, async', function(done) {
+        var parent = 'parent';
+        var child = 'child';
+        var resource = 'resource';
+        var action = 'action';
+        this.acl.addRole(parent);
+        this.acl.addRole(child, parent);
+        this.acl.allow(parent, resource, action, function(err, role, resource, action, result, next) {
+          setTimeout(function() {
+            next();
+          });
+        });
+
+        this.acl.query(child, resource, action, function(err, allowed) {
+          allowed.should.equal(false); // child cannot access resource
+          done();
+        });
+      });
+
+      it('should deny if custom assertions cannot resolve, sync', function(done) {
+        var parent = 'parent';
+        var child = 'child';
+        var resource = 'resource';
+        var action = 'action';
+        this.acl.addRole(parent);
+        this.acl.addRole(child, parent);
+        this.acl.allow(parent, resource, action, function(err, role, resource, action, result, next) {
+          next();
+        });
+
+        this.acl.query(child, resource, action, function(err, allowed) {
+          allowed.should.equal(false); // child cannot access resource
+          done();
+        });
+      });
+
+      it('should allow if not allowed and but parent is allowed using custom assertions', function(done) {
+        var parent = 'parent';
+        var child = 'child';
+        var resource = 'resource';
+        var action = 'action';
+        this.acl.addRole(parent);
+        this.acl.addRole(child, parent);
+        this.acl.allow(parent, resource, action, function(err, role, resource, action, result, next) {
+          setTimeout(function() {
+            if (child === role) return result(null, true);
+            return next();
+          });
+        });
+
+        this.acl.query(child, resource, action, function(err, allowed) {
+          console.log(err, allowed);
+          allowed.should.equal(true); // child can access resource
+          done();
+        });
+      });
+
+      it('should deny if not allowed and parent is not allowed using custom assertions', function(done) {
+        var parent = 'parent';
+        var child = 'child';
+        var resource = 'resource';
+        var action = 'action';
+        this.acl.addRole(parent);
+        this.acl.addRole(child, parent);
+        this.acl.allow(parent, resource, action, function(err, role, resource, action, result, next) {
+          setTimeout(function() {
+            if (child === role) return result(null, false);
+            return next();
+          });
+        });
+
+        this.acl.query(child, resource, action, function(err, allowed) {
+          allowed.should.equal(false); // child cannot access resource
+          done();
+        });
+      });
     });
 
     describe('resource', function() {
@@ -94,6 +171,82 @@ require('should');
 
         this.acl.query(role, child, action, function(err, allowed) {
           allowed.should.equal(false); // role cannot also access child resource
+        });
+      });
+
+      it('should deny if custom assertions cannot resolve permission, async', function(done) {
+        var role = 'role';
+        var parent = 'parent';
+        var child = 'child';
+        var action = 'action';
+        this.acl.addResource(parent);
+        this.acl.addResource(child, parent);
+        this.acl.allow(role, parent, action, function(err, role, resource, action, result, next) {
+          setTimeout(function() {
+            next();
+          });
+        });
+
+        this.acl.query(role, child, action, function(err, allowed) {
+          allowed.should.equal(false); // child resource is not accessible
+          done();
+        });
+      });
+
+      it('should deny if custom assertions cannot resolve permission, sync', function(done) {
+        var role = 'role';
+        var parent = 'parent';
+        var child = 'child';
+        var action = 'action';
+        this.acl.addResource(parent);
+        this.acl.addResource(child, parent);
+        this.acl.allow(role, parent, action, function(err, role, resource, action, result, next) {
+          next();
+        });
+
+        this.acl.query(role, child, action, function(err, allowed) {
+          allowed.should.equal(false); // child resource is not accessible
+          done();
+        });
+      });
+
+      it('should allow if not allowed and but parent resource is allowed using custom assertions', function(done) {
+        var role = 'role';
+        var parent = 'parent';
+        var child = 'child';
+        var action = 'action';
+        this.acl.addResource(parent);
+        this.acl.addResource(child, parent);
+        this.acl.allow(role, parent, action, function(err, role, resource, action, result, next) {
+          setTimeout(function() {
+            if (child === resource) return result(null, true);
+            return next();
+          });
+        });
+
+        this.acl.query(role, child, action, function(err, allowed) {
+          allowed.should.equal(true); // child resource is accessible
+          done();
+        });
+      });
+
+      it('should deny if not allowed and parent resource is not allowed using custom assertions', function(done) {
+        var role = 'role';
+        var parent = 'parent';
+        var child = 'child';
+        var action = 'action';
+        this.acl.addResource(parent);
+        this.acl.addResource(child, parent);
+        this.acl.allow(role, parent, action, function(err, role, resource, action, result, next) {
+          setTimeout(function() {
+            if (child === resource) return result(null, false);
+            return next();
+          });
+        });
+
+        this.acl.query(role, child, action, function(err, allowed) {
+          allowed.should.equal(false); // child resource is not accessible
+          done();
         });
       });
     });

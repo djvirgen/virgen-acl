@@ -41,6 +41,20 @@ require('should');
           done();
         });
       });
+
+      it('should deny if not allowed and parent is not allowed', function(done) {
+        var parent = 'parent';
+        var child = 'child';
+        var resource = 'resource';
+        var action = 'action';
+        this.acl.addRole(parent);
+        this.acl.addRole(child, parent);
+
+        this.acl.query(child, resource, action, function(err, allowed) {
+          allowed.should.equal(false); // child cannot access resource
+          done();
+        });
+      });
     });
 
     describe('resource', function() {
@@ -67,6 +81,19 @@ require('should');
 
         this.acl.query(role, child, action, function(err, allowed) {
           allowed.should.equal(true); // role can also access child resource
+        });
+      });
+
+      it('should deny if not allowed and parent resource is not allowed', function() {
+        var role = 'role';
+        var parent = 'parent';
+        var child = 'child';
+        var action = 'action';
+        this.acl.addResource(parent);
+        this.acl.addResource(child, parent);
+
+        this.acl.query(role, child, action, function(err, allowed) {
+          allowed.should.equal(false); // role cannot also access child resource
         });
       });
     });

@@ -133,7 +133,7 @@ Sometimes you need more complex rules when determining access. Custom
 assertions can be provided to perform additional logic on each matching
 ACL query:
 
-    acl.allow("member", "blog", "edit", function(role, resource, action, result, next) {
+    acl.allow("member", "blog", "edit", function(err, role, resource, action, result, next) {
       // Use next() if unable to determine permission based on provided arguments
       if (!(role instanceof User) || !(resource instanceof Blog))
         return next();

@@ -4,9 +4,25 @@ require('should');
 (function() {
   var assert = require('assert')
     , Acl = require('../lib').Acl
-    , roles = ['admin', 'member', 'guest']
+    , roles = ['admin', 'member', 'guest', ['member', 'admin'], ['member', 'guest']]
     , resources = ['blog', 'page', 'site']
     , actions = ['view', 'create', 'edit', 'delete'];
+
+  // User class
+  var User = function(role) {
+    return {
+      getRoleId: function() {
+          return role;
+      }
+    };
+  }
+
+  // Resource class
+  var Resource = function() {
+    return {
+      resource_id: 'resource'
+    };
+  }
 
   // tests
   describe('acl', function() {
@@ -339,13 +355,18 @@ require('should');
       describe('custom permissions', function() {
         beforeEach(function() {
           this.acl = new Acl();
-          this.acl.allow('user', 'page', 'view');
+          this.acl.allow('member', 'page', 'view');
         });
 
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
-              if (role == 'user' && resource == 'page' && action == 'view') {
+              var allowableRole = false;
+              if( role === 'member' || (Array.isArray(role) && role.indexOf('member') !== -1)) {
+                allowableRole = true;
+              }
+
+              if (allowableRole && resource == 'page' && action == 'view') {
                 it('should allow role to resource', function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     assert(allowed == true);
@@ -374,7 +395,12 @@ require('should');
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
-              if (role == 'admin') {
+              var allowableRole = false;
+              if( role === 'admin' || (Array.isArray(role) && role.indexOf('admin') !== -1)) {
+                allowableRole = true;
+              }
+
+              if (allowableRole) {
                 it('should allow all resources to globally allowed role', function() {
                   this.acl.query(role, resource, action, function(err, allowed){
                     assert(allowed == true);
@@ -420,6 +446,34 @@ require('should');
           })(resources[j]);
         })(roles[i]);
       });
+
+      describe('object oriented interface', function() {
+        beforeEach(function() {
+          this.acl = new Acl();
+        });
+
+        it('should support objects with getRoleId()', function(done) {
+          var user = new User('guest');
+          var resource = new Resource();
+
+          this.acl.allow('guest', 'resource', 'action');
+          this.acl.query(user, resource, 'action', function(err, allowed) {
+            allowed.should.equal(true);
+            done();
+          })
+        });
+
+        it('should support objects with multiple roles', function(done) {
+          var user = new User(['blog-admin', 'product-admin']);
+          var resource = new Resource();
+
+          this.acl.allow('product-admin', 'resource', 'action');
+          this.acl.query(user, resource, 'action', function(err, allowed) {
+            allowed.should.equal(true);
+            done();
+          });
+        });
+      });
     });
 
     describe('with global allow all', function() {
@@ -450,7 +504,12 @@ require('should');
         for (var i in roles) (function(role) {
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
-              if (role == 'guest') {
+              var deniableRole = false;
+              if( role === 'guest' || (Array.isArray(role) && role.indexOf('guest') !== -1)) {
+                allowableRole = true;
+              }
+
+              if (deniableRole) {
                 it('should deny all resources to globally denined role', function() {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(false);

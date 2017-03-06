@@ -123,7 +123,6 @@ require('should');
         });
 
         this.acl.query(child, resource, action, function(err, allowed) {
-          console.log(err, allowed);
           allowed.should.equal(true); // child can access resource
           done();
         });

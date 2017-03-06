@@ -4,7 +4,7 @@ require('should');
 (function() {
   var assert = require('assert')
     , Acl = require('../lib').Acl
-    , roles = ['admin', 'member', 'guest', ['member', 'admin'], ['member', 'guest']]
+    , roles = ['admin', 'member', 'guest', ['member', 'admin'], ['member', 'guest'], ['guest', 'member']]
     , resources = ['blog', 'page', 'site']
     , actions = ['view', 'create', 'edit', 'delete'];
 
@@ -505,17 +505,17 @@ require('should');
             for (var k in actions) (function(action) {
               var deniableRole = false;
               if( role === 'guest' || (Array.isArray(role) && role.indexOf('guest') !== -1)) {
-                allowableRole = true;
+                deniableRole = true;
               }
 
               if (deniableRole) {
-                it('should deny all resources to globally denined role', function() {
+                it(`should deny ${action} of ${resource} to guest`, function() {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(false);
                   });
                 });
               } else {
-                it('should allow resources to all other roles', function() {
+                it(`should allow ${action} of ${resource} to ${role}`, function() {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(true);
                   });
@@ -537,13 +537,13 @@ require('should');
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
               if (resource == 'blog') {
-                it('should deny all roles to globally denined resource', function() {
+                it(`should deny ${role} to blog`, function() {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(false);
                   });
                 });
               } else {
-                it('should allow roles to all other resources', function() {
+                it(`should allow ${role} to ${resource}`, function() {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(true);
                   });

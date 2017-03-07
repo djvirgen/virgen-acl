@@ -361,7 +361,7 @@ require('should');
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
               var allowableRole = false;
-              if( role === 'member' || (Array.isArray(role) && role.indexOf('member') !== -1)) {
+              if(role === 'member' || (Array.isArray(role) && role.indexOf('member') !== -1)) {
                 allowableRole = true;
               }
 
@@ -395,7 +395,7 @@ require('should');
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
               var allowableRole = false;
-              if( role === 'admin' || (Array.isArray(role) && role.indexOf('admin') !== -1)) {
+              if(role === 'admin' || (Array.isArray(role) && role.indexOf('admin') !== -1)) {
                 allowableRole = true;
               }
 
@@ -504,7 +504,7 @@ require('should');
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
               var deniableRole = false;
-              if( role === 'guest' || (Array.isArray(role) && role.indexOf('guest') !== -1)) {
+              if(role === 'guest' || (Array.isArray(role) && role.indexOf('guest') !== -1)) {
                 deniableRole = true;
               }
 

@@ -69,9 +69,9 @@ Role and Resource Discovery
 If you are more of an object-oriented programmer and prefer to use objects
 to represent your roles and resources, then you're in luck! Virgen-ACL can
 discover roles and resources from your objects so long as your role objects
-contain the property `role_id` OR a function `getRoleId()`  and your resource
+contain the property `role_id` OR a function `getRoleId()` and your resource
 objects contain the property `resource_id` OR a function `getResourceId()`.
-Valid value types for role_ids are strings, `null` or arrays of strings. Valid
+Valid value types for role_ids are strings, an array of strings, or `null` Valid
 value types for resource_ids are `null` or strings.
 Here's an example of how that might work:
 

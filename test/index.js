@@ -478,7 +478,7 @@ require('should');
           var resource = new Resource();
           this.acl.allow('product-admin', 'resource', null, function(err, role, resource, action, result, next) {
             role.should.equal(user);
-            result(null, true);
+            done();
           });
 
           this.acl.query(user, resource, 'action', function(err, allowed) {

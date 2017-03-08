@@ -472,6 +472,19 @@ require('should');
             done();
           });
         });
+
+        it('should always pass the role object to allow handler', function(done) {
+          var user = new User(['blog-admin', 'product-admin']);
+          var resource = new Resource();
+          this.acl.allow('product-admin', 'resource', null, function(err, role, resource, action, result, next) {
+            role.should.equal(user);
+            result(null, true);
+          });
+
+          this.acl.query(user, resource, 'action', function(err, allowed) {
+            // noop
+          });
+        });
       });
     });
 

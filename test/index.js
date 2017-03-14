@@ -528,9 +528,10 @@ require('should');
                   });
                 });
               } else {
-                it(`should allow ${action} of ${resource} to ${role}`, function() {
+                it(`should allow ${action} of ${resource} to ${role}`, function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(true);
+                    done();
                   });
                 });
               }
@@ -550,15 +551,17 @@ require('should');
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
               if (resource == 'blog') {
-                it(`should deny ${role} to blog`, function() {
+                it(`should deny ${role} to blog`, function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(false);
+                    done();
                   });
                 });
               } else {
-                it(`should allow ${role} to ${resource}`, function() {
+                it(`should allow ${role} to ${resource}`, function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(true);
+                    done();
                   });
                 });
               }

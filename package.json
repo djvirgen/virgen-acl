@@ -17,6 +17,7 @@
   "keywords": [
     "acl"
   ],
+  "types": "./index.d.ts",
   "author": "Hector Virgen (http://www.virgentech.com) <hector@virgentech.com>",
   "license": "BSD"
 }

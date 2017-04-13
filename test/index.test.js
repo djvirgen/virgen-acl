@@ -1,5 +1,6 @@
 require('should');
 
+
 // index.js - Test main virgen-acl export
 (function() {
   var assert = require('assert')

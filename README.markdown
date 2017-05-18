@@ -81,7 +81,9 @@ Here's an example of how that might work:
         this.id = attribs.id || null;
       }
 
-      User.prototype.getRoleId = function() {
+      // getRoleId gets access to the resource so it can return
+      // different roles depending on the resource if you choose
+      User.prototype.getRoleId = function(resource) {
         if (this.id) {
           return "member"; // members have an ID
         } else {

@@ -486,6 +486,22 @@ require('should');
             // noop
           });
         });
+
+        it('should always pass the resource object to the user getRoleId function', function(done) {
+          var resource = new Resource;
+          var user = {
+            getRoleId: function(passedResource) {
+              passedResource.should.equal(resource);
+              done();
+              return 'role';
+            }
+          }
+
+          this.acl.allow('role', 'resource', null);
+          this.acl.query(user, resource, 'action', function(err, allowed) {
+            // noop
+          });
+        });
       });
     });
 

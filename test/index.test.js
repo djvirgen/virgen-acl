@@ -4,6 +4,7 @@ require('should');
 // index.js - Test main virgen-acl export
 (function() {
   var assert = require('assert')
+    , PermissionType = require('../lib/permission_type') // kibi: added by us
     , Acl = require('../lib').Acl
     , roles = ['admin', 'member', 'guest', ['member', 'admin'], ['member', 'guest'], ['guest', 'member']]
     , resources = ['blog', 'page', 'site']
@@ -30,6 +31,76 @@ require('should');
     beforeEach(function() {
       this.acl = new Acl();
     });
+
+     // kibi: added by us
+    describe('multiple conflicting roles respecting the LIFO', function () {
+      
+        it('deny role is last', function(done) {
+          var user = new User(['admin', 'user']);
+          var resource = new Resource();
+
+          this.acl.allow('admin', 'resource', 'action');
+          this.acl.deny('user', 'resource', 'action');
+          
+          this.acl.query(user, resource, 'action', function(err, allowed, type) {
+            allowed.should.equal(false);
+            type.should.equal(PermissionType.DENY);
+            done();
+          });
+        });
+        
+        it('deny role is first', function(done) {
+          var user = new User(['admin', 'user']);
+          var resource = new Resource();
+
+          this.acl.deny('user', 'resource', 'action');
+          this.acl.allow('admin', 'resource', 'action');
+          
+          this.acl.query(user, resource, 'action', function(err, allowed, type) {
+            allowed.should.equal(true);
+            type.should.equal(PermissionType.ALLOW);
+            done();
+          });
+        });
+
+        it('no deny role', function(done) {
+          var user = new User(['admin', 'user']);
+          var resource = new Resource();
+
+          this.acl.allow('admin', 'resource', 'action');
+          
+          this.acl.query(user, resource, 'action', function(err, allowed, type) {
+            allowed.should.equal(true);
+            type.should.equal(PermissionType.ALLOW);
+            done();
+          });
+        });
+
+        it('no allow role', function(done) {
+          var user = new User(['admin', 'user']);
+          var resource = new Resource();
+
+          this.acl.deny('user', 'resource', 'action');
+          
+          this.acl.query(user, resource, 'action', function(err, allowed, type) {
+            allowed.should.equal(false);
+            type.should.equal(PermissionType.DENY);
+            done();
+          });
+        });
+
+        it('no role at all', function(done) {
+          var user = new User(['admin', 'user']);
+          var resource = new Resource();
+
+          this.acl.query(user, resource, 'action', function(err, allowed, type) {
+            allowed.should.equal(false);
+            type.should.equal(PermissionType.NONE);
+            done();
+          });
+        });
+    });
+    // kibi: end
 
     describe('role', function() {
       beforeEach(function() {

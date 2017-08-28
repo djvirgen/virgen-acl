@@ -36,7 +36,7 @@ require('should');
         this.acl = new Acl();
       });
 
-      it("should support null", function(done) {
+      it("supports null", function(done) {
         this.acl.allow(null, 'foo', 'bar');
         this.acl.query(null, 'foo', 'bar', function(err, allowed) {
           allowed.should.equal(true);
@@ -44,7 +44,7 @@ require('should');
         });
       });
 
-      it('should support role inheritance', function(done) {
+      it('supports role inheritance', function(done) {
         var parent = 'parent';
         var child = 'child';
         var resource = 'resource';
@@ -59,7 +59,7 @@ require('should');
         });
       });
 
-      it('should deny if not allowed and parent is not allowed', function(done) {
+      it('denies if not allowed and parent is not allowed', function(done) {
         var parent = 'parent';
         var child = 'child';
         var resource = 'resource';
@@ -73,7 +73,7 @@ require('should');
         });
       });
 
-      it('should deny if custom assertions cannot resolve, async', function(done) {
+      it('denies if custom assertions cannot resolve, async', function(done) {
         var parent = 'parent';
         var child = 'child';
         var resource = 'resource';
@@ -92,7 +92,7 @@ require('should');
         });
       });
 
-      it('should deny if custom assertions cannot resolve, sync', function(done) {
+      it('denies if custom assertions cannot resolve, sync', function(done) {
         var parent = 'parent';
         var child = 'child';
         var resource = 'resource';
@@ -109,7 +109,7 @@ require('should');
         });
       });
 
-      it('should allow if not allowed and but parent is allowed using custom assertions', function(done) {
+      it('allows if not allowed and but parent is allowed using custom assertions', function(done) {
         var parent = 'parent';
         var child = 'child';
         var resource = 'resource';
@@ -129,7 +129,39 @@ require('should');
         });
       });
 
-      it('should deny if not allowed and parent is not allowed using custom assertions', function(done) {
+      it('denies if parent is denied after child is allowed', function(done) {
+        var parent = 'parent';
+        var child = 'child';
+        var resource = 'resource';
+        var action = 'action';
+        this.acl.addRole(parent);
+        this.acl.addRole(child, parent);
+        this.acl.allow(child, resource, action);
+        this.acl.deny(parent, resource, action);
+
+        this.acl.query(child, resource, action, function(err, allowed) {
+          allowed.should.equal(false); // child cannot access resource because parent was denied after child rule
+          done();
+        });
+      });
+
+      it('allows if child is allowed after parent is denied', function(done) {
+        var parent = 'parent';
+        var child = 'child';
+        var resource = 'resource';
+        var action = 'action';
+        this.acl.addRole(parent);
+        this.acl.addRole(child, parent);
+        this.acl.deny(parent, resource, action);
+        this.acl.allow(child, resource, action);
+
+        this.acl.query(child, resource, action, function(err, allowed) {
+          allowed.should.equal(true); // child can access resource because it was allowed after parent rule
+          done();
+        });
+      });
+
+      it('denies if not allowed and parent is not allowed using custom assertions', function(done) {
         var parent = 'parent';
         var child = 'child';
         var resource = 'resource';
@@ -155,7 +187,7 @@ require('should');
         this.acl = new Acl();
       });
 
-      it("should handle null resource", function(done) {
+      it("handles null resource", function(done) {
         this.acl.allow('foo', null, 'bar');
         this.acl.query('foo', null, 'bar', function(err, allowed) {
           allowed.should.equal(true);
@@ -163,7 +195,7 @@ require('should');
         });
       });
 
-      it('should supports resource inheritance', function() {
+      it('supportss resource inheritance', function() {
         var role = 'role';
         var parent = 'parent';
         var child = 'child';
@@ -177,7 +209,7 @@ require('should');
         });
       });
 
-      it('should deny if not allowed and parent resource is not allowed', function() {
+      it('denies if not allowed and parent resource is not allowed', function() {
         var role = 'role';
         var parent = 'parent';
         var child = 'child';
@@ -190,7 +222,7 @@ require('should');
         });
       });
 
-      it('should deny if custom assertions cannot resolve permission, async', function(done) {
+      it('denies if custom assertions cannot resolve permission, async', function(done) {
         var role = 'role';
         var parent = 'parent';
         var child = 'child';
@@ -209,7 +241,7 @@ require('should');
         });
       });
 
-      it('should deny if custom assertions cannot resolve permission, sync', function(done) {
+      it('denies if custom assertions cannot resolve permission, sync', function(done) {
         var role = 'role';
         var parent = 'parent';
         var child = 'child';
@@ -226,7 +258,7 @@ require('should');
         });
       });
 
-      it('should allow if not allowed and but parent resource is allowed using custom assertions', function(done) {
+      it('allows if not allowed and but parent resource is allowed using custom assertions', function(done) {
         var role = 'role';
         var parent = 'parent';
         var child = 'child';
@@ -246,7 +278,7 @@ require('should');
         });
       });
 
-      it('should deny if not allowed and parent resource is not allowed using custom assertions', function(done) {
+      it('denies if not allowed and parent resource is not allowed using custom assertions', function(done) {
         var role = 'role';
         var parent = 'parent';
         var child = 'child';
@@ -279,7 +311,7 @@ require('should');
       });
 
       for (var i in allowedActions) (function(action) {
-        it("should allow all actions specified in array", function(done) {
+        it("allows all actions specified in array", function(done) {
           this.acl.query('foo', 'bar', action, function(err, allowed) {
             allowed.should.equal(true);
             done();
@@ -288,7 +320,7 @@ require('should');
       })(allowedActions[i]);
 
       for (var i in deniedActions) (function(action) {
-        it("should deny all actions specified in array", function(done) {
+        it("denies all actions specified in array", function(done) {
           this.acl.query('foo', 'bar', action, function(err, allowed) {
             allowed.should.equal(false);
             done();
@@ -312,7 +344,7 @@ require('should');
       for (var i in roles) (function(role) {
         for (var j in resources) (function(resource) {
           for (var k in actions) (function(action) {
-            it('should deny role "' + role + '" to resource "' + resource + '" for action "' + action + '"', function(done) {
+            it('denies role "' + role + '" to resource "' + resource + '" for action "' + action + '"', function(done) {
               this.acl.query(role, resource, action, function(err, allowed) {
                  allowed.should.equal(false);
                  done();
@@ -322,7 +354,7 @@ require('should');
         })(resources[j]);
       })(roles[i]);
 
-      it("should honor LIFO stack", function(done) {
+      it("honors LIFO stack", function(done) {
         this.acl.allow('foo', 'bar', 'derp');
         this.acl.deny('foo', 'bar', 'derp');
 
@@ -337,7 +369,7 @@ require('should');
           this.acl = new Acl();
         })
 
-        it("should run when checking permissions", function(done) {
+        it("runs when checking permissions", function(done) {
           this.acl.allow('foo', 'bar', 'derp', function(err, role, resource, action, result, next) {
             role.should.equal('foo');
             resource.should.equal('bar');
@@ -367,14 +399,14 @@ require('should');
               }
 
               if (allowableRole && resource == 'page' && action == 'view') {
-                it('should allow role to resource', function(done) {
+                it('allows role to resource', function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     assert(allowed == true);
                     done();
                   });
                 });
               } else {
-                it('should deny role to resource', function(done) {
+                it('denies role to resource', function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     assert(allowed == false);
                     done();
@@ -401,13 +433,13 @@ require('should');
               }
 
               if (allowableRole) {
-                it('should allow all resources to globally allowed role', function() {
+                it('allows all resources to globally allowed role', function() {
                   this.acl.query(role, resource, action, function(err, allowed){
                     assert(allowed == true);
                   });
                 });
               } else {
-                it('should deny all resources to all other roles', function() {
+                it('denies all resources to all other roles', function() {
                   this.acl.query(role, resource, action, function(err, allowed){
                     assert(allowed == false);
                   })
@@ -428,14 +460,14 @@ require('should');
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
               if (resource == 'blog') {
-                it('should allow all roles to globally allowed resource', function(done) {
+                it('allows all roles to globally allowed resource', function(done) {
                   this.acl.query(role, resource, action, function(err, allowed){
                     allowed.should.equal(true);
                     done();
                   });
                 });
               } else {
-                it('should deny all roles to all other resources', function(done) {
+                it('denies all roles to all other resources', function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(false);
                     done();
@@ -452,7 +484,7 @@ require('should');
           this.acl = new Acl();
         });
 
-        it('should support objects with getRoleId()', function(done) {
+        it('supports objects with getRoleId()', function(done) {
           var user = new User('guest');
           var resource = new Resource();
 
@@ -463,7 +495,7 @@ require('should');
           })
         });
 
-        it('should support objects with multiple roles', function(done) {
+        it('supports objects with multiple roles', function(done) {
           var user = new User(['blog-admin', 'product-admin']);
           var resource = new Resource();
 
@@ -474,7 +506,7 @@ require('should');
           });
         });
 
-        it('should always pass the role object to allow handler', function(done) {
+        it('passes the role object to allow handler', function(done) {
           var user = new User(['blog-admin', 'product-admin']);
           var resource = new Resource();
           this.acl.allow('product-admin', 'resource', null, function(err, role, resource, action, result, next) {
@@ -498,7 +530,7 @@ require('should');
       for (var i in roles) (function(role) {
         for (var j in resources) (function(resource) {
           for (var k in actions) (function(action) {
-            it('should allow allow all roles to all resources', function() {
+            it('allows allow all roles to all resources', function() {
               this.acl.query(role, resource, action, function(err, allowed) {
                 allowed.should.equal(true);
               });
@@ -523,13 +555,13 @@ require('should');
               }
 
               if (deniableRole) {
-                it(`should deny ${action} of ${resource} to guest`, function() {
+                it(`denies ${action} of ${resource} to guest`, function() {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(false);
                   });
                 });
               } else {
-                it(`should allow ${action} of ${resource} to ${role}`, function(done) {
+                it(`allows ${action} of ${resource} to ${role}`, function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(true);
                     done();
@@ -552,14 +584,14 @@ require('should');
           for (var j in resources) (function(resource) {
             for (var k in actions) (function(action) {
               if (resource == 'blog') {
-                it(`should deny ${role} to blog`, function(done) {
+                it(`denies ${role} to blog`, function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(false);
                     done();
                   });
                 });
               } else {
-                it(`should allow ${role} to ${resource}`, function(done) {
+                it(`allows ${role} to ${resource}`, function(done) {
                   this.acl.query(role, resource, action, function(err, allowed) {
                     allowed.should.equal(true);
                     done();

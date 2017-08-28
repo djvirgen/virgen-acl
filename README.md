@@ -16,6 +16,11 @@ All ACL rules are stored in memory, making Virgen-ACL extremely fast. Unless
 specified with custom assertions, there are no DB lookups when querying the ACL,
 allowing your app to respond as quickly as possible to ACL-gated content.
 
+When querying the ACL, the rules are processed in LIFO order. The first rule to
+produce a non-empty result (i.e. not null) becomes the permission for the given
+role/resource/action tuple. This allows you to provide general rules first,
+followed by "overrides" for special cases.
+
 ## Installation
 
 ```bash

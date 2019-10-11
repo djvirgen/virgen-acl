@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/djvirgen/virgen-acl.svg?style=svg)](https://circleci.com/gh/djvirgen/virgen-acl)
+
 # Virgen-ACL
 
 Simple in-memory ACL for node.js apps. Supports arbitrary roles and resources,

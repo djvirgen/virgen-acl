@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^6.2.1",
+    "mocha": "^10.2.0",
     "nyc": "^14.1.1",
     "should": "~11.2.0",
     "typescript": "^2.2.2",
